@@ -4,6 +4,7 @@ from tensorflow.keras.layers import Flatten, Dense, BatchNormalization, Activati
 from tensorflow.keras.models import Model
 import matplotlib.pyplot as plt
 
+
 batch_size = 32
 image_size = (224, 224)
 input_shape = (224, 224, 3)
@@ -69,9 +70,7 @@ history1 = model.fit_generator(
     generator=train_generator,
     epochs=10,
     shuffle=True,
-    verbose=1,
-    use_multiprocessing=True,
-    workers=16
+    verbose=1
 )
 
 for layer in model.layers:
@@ -86,9 +85,7 @@ history2 = model.fit_generator(
     generator=train_generator,
     epochs=50,
     shuffle=True,
-    verbose=1,
-    use_multiprocessing=True,
-    workers=16
+    verbose=1
 )
 
 # Save model
