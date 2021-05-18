@@ -34,14 +34,6 @@ val_generator = train_datagen.flow_from_directory(
     subset='validation'
 )
 
-test_generator = train_datagen.flow_from_directory(
-    test_data_dir,
-    target_size=image_size,
-    batch_size=batch_size,
-    class_mode='categorical',
-    subset='validation'
-)
-
 base_model = ResNet50(
     include_top=False,
     weights='imagenet',
