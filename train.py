@@ -1,8 +1,8 @@
 from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.layers import Flatten, Dense, BatchNormalization, Activation
 from tensorflow.keras.models import Model
-import matplotlib.pyplot as plt
 
 
 batch_size = 32
@@ -66,11 +66,16 @@ model = Model(inputs=base_model.input, outputs=output)
 
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
+early_stop = EarlyStopping(monitor='val_loss', patience=20, verbose=1, mode='auto', restore_best_weights=True)
+
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1, mode='auto')
+
 history1 = model.fit_generator(
     generator=train_generator,
     epochs=10,
     shuffle=True,
-    verbose=1
+    verbose=1,
+    callbacks=[reduce_lr]
 )
 
 for layer in model.layers:
@@ -85,33 +90,10 @@ history2 = model.fit_generator(
     generator=train_generator,
     epochs=50,
     shuffle=True,
-    verbose=1
+    verbose=1,
+    callbacks=[reduce_lr, early_stop]
 )
 
 # Save model
 model.save('ResNet50_retrained.h5')
-
-# Plot the training graph
-acc = history1.history['acc'] + history2.history['acc']
-val_acc = history1.history['val_loss'] + history2.history['val_loss']
-loss = history1.history['loss'] + history2.history['loss']
-val_loss = history1.history['val_loss'] + history2.history['val_loss']
-epochs = range(len(acc))
-
-fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-
-axes[0].plot(epochs, acc, 'r-', label='Training Accuracy')
-axes[0].plot(epochs, val_acc, 'b--', label='Validation Accuracy')
-axes[0].set_title('Training and Validation Accuracy')
-axes[0].legend(loc='best')
-
-axes[1].plot(epochs, loss, 'r-', label='Training Loss')
-axes[1].plot(epochs, val_loss, 'b--', label='Validation Loss')
-axes[1].set_title('Training and Validation Loss')
-axes[1].legend(loc='best')
-
-plt.show()
-
-# Final test accuracy
-_, test_acc = model.evaluate(test_generator)
-print('Test accuracy', test_acc)
+print('Model saved')
