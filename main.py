@@ -2,10 +2,11 @@ import os
 import cv2
 import random
 import tkinter as tk
+import tkinter.font as font
+from tkinter.filedialog import askopenfilename
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import *
-from tkinter.filedialog import askopenfilename
 from tensorflow.keras.models import load_model
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -14,17 +15,18 @@ class Application(tk.Frame):
     def __init__(self, master):
         self.master = master
         master.title('Painting style recognition')
-        master.geometry('1205x460')
+        master.geometry('1205x450')
 
         self.image = None
         self.plot = None
         self.button = tk.Button(master, text='Load file', command=self.open_file)
-        self.button.config(width=24, height=3)
+        self.button.config(width=12, height=1)
+        self.button['font'] = font.Font(size=16)
         self.button.pack(side=tk.BOTTOM)
 
         self.image_label = tk.Label()
         self.canvas = FigureCanvasTkAgg()
-        
+
         self.model = load_model('ResNet50_retrained.h5')
         self.targets = {0: 'Expressionism', 1: 'Impressionism', 2: 'Realism', 3: 'Renaissance', 4: 'Romanticism'}
 
