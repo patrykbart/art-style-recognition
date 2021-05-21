@@ -1,37 +1,73 @@
 import os
 import cv2
 import random
+import tkinter as tk
+from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import *
+from tkinter.filedialog import askopenfilename
 from tensorflow.keras.models import load_model
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-plt.figure(figsize=(12, 6), dpi=80)
-model = load_model('ResNet50_retrained.h5')
 
-image_size = (224, 224)
+class Application(tk.Frame):
+    def __init__(self, master):
+        self.master = master
+        master.title('Painting style recognition')
+        master.geometry('1205x460')
 
-targets = {0: 'Expressionism', 1: 'Impressionism', 2: 'Realism', 3: 'Renaissance', 4: 'Romanticism'}
+        self.image = None
+        self.plot = None
+        self.button = tk.Button(master, text='Load file', command=self.open_file)
+        self.button.config(width=24, height=3)
+        self.button.pack(side=tk.BOTTOM)
 
-style = random.choice(list(targets.values()))
-files = os.listdir('input/processed_data/test/' + style)
+        self.image_label = tk.Label()
+        self.canvas = FigureCanvasTkAgg()
+        
+        self.model = load_model('ResNet50_retrained.h5')
+        self.targets = {0: 'Expressionism', 1: 'Impressionism', 2: 'Realism', 3: 'Renaissance', 4: 'Romanticism'}
 
-path_to_img = 'input/processed_data/test/' + style + '/' + random.choice(list(files))
-print(path_to_img)
+    def open_file(self):
+        image = askopenfilename()
 
-img = cv2.imread(path_to_img)
-img = cv2.resize(img, image_size, 3)
-img = np.array(img).astype(np.float32)/255.0
-img = np.expand_dims(img, axis=0)
+        self.image_label.destroy()
+        self.canvas.get_tk_widget().destroy()
 
-output = model.predict(img)[0]
-output = [round(prob * 100, 2) for prob in output]
+        self.load_img(image)
+        self.predict(image)
 
-plt.barh(list(targets.values()), output)
-for i, prob in enumerate(output):
-    plt.text(prob + 0.1, i - 0.05, str(prob))
+    def load_img(self, image):
+        image = Image.open(image).resize((400, 400))
+        image = ImageTk.PhotoImage(image)
+        self.image_label = tk.Label(root, image=image)
+        self.image_label.image = image
+        self.image_label.pack(side=tk.LEFT)
 
-plt.subplots_adjust(left=0.1)
-plt.xlabel('%')
+    def predict(self, image):
+        img = cv2.imread(image)
+        img = cv2.resize(img, (224, 224), 3)
+        img = np.array(img).astype(np.float32) / 255.0
+        img = np.expand_dims(img, axis=0)
 
-plt.savefig('plot.png')
-plt.show()
+        output = self.model.predict(img)[0]
+        output = [round(prob * 100, 2) for prob in output]
+
+        fig = plt.Figure(figsize=(8, 4), dpi=100)
+        ax = fig.subplots()
+
+        ax.barh(list(self.targets.values()), output)
+        for i, prob in enumerate(output):
+            ax.text(prob + 0.1, i - 0.05, str(prob))
+
+        #ax.subplots_adjust(left=0.1)
+        ax.set_xlabel('%')
+        fig.tight_layout()
+
+        self.canvas = FigureCanvasTkAgg(fig, master=root)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(side=tk.RIGHT)
+
+root = tk.Tk()
+app = Application(root)
+root.mainloop()
