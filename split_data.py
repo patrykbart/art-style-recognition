@@ -40,4 +40,4 @@ for dir in dirs:
 
 # split
 print('Splitting data...')
-splitfolders.ratio(input_dir, output_dir, seed=1337, ratio=(0.6, 0.2, 0.2))
+splitfolders.ratio(input_dir, output_dir, seed=1337, ratio=(0.75, 0.2, 0.05))
