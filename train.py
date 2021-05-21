@@ -5,13 +5,12 @@ from tensorflow.keras.layers import Flatten, Dense, BatchNormalization, Activati
 from tensorflow.keras.models import Model
 
 
-batch_size = 32
+batch_size = 64
 image_size = (224, 224)
 input_shape = (224, 224, 3)
 
 train_data_dir = "input/processed_data/train"
 val_data_dir = "input/processed_data/val"
-test_data_dir = "input/processed_data/test"
 
 train_datagen = ImageDataGenerator(
     preprocessing_function=preprocess_input,
@@ -55,11 +54,9 @@ x = Activation('relu')(x)
 output = Dense(train_generator.num_classes, activation='softmax')(x)
 
 model = Model(inputs=base_model.input, outputs=output)
-
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 early_stop = EarlyStopping(monitor='val_loss', patience=20, verbose=1, mode='auto', restore_best_weights=True)
-
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1, mode='auto')
 
 history1 = model.fit_generator(
@@ -67,9 +64,11 @@ history1 = model.fit_generator(
     epochs=10,
     shuffle=True,
     verbose=1,
-    callbacks=[reduce_lr]
+    callbacks=[reduce_lr],
+    validation_data=val_generator
 )
 
+# retrain core ResNet layers
 for layer in model.layers:
     layer.trainable = False
 
@@ -80,12 +79,12 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
 
 history2 = model.fit_generator(
     generator=train_generator,
-    epochs=50,
+    epochs=10,
     shuffle=True,
     verbose=1,
-    callbacks=[reduce_lr, early_stop]
+    callbacks=[reduce_lr, early_stop],
+    validation_data=val_generator
 )
 
-# Save model
 model.save('ResNet50_retrained.h5')
 print('Model saved')
