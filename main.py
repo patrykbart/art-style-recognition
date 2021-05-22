@@ -62,7 +62,9 @@ class Application(tk.Frame):
         for i, prob in enumerate(output):
             ax.text(prob + 0.1, i - 0.05, str(prob))
 
-        #ax.subplots_adjust(left=0.1)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+
         ax.set_xlabel('%')
         fig.tight_layout()
 
