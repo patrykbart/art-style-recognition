@@ -19,7 +19,7 @@ class Application(tk.Frame):
 
         self.image = None
         self.plot = None
-        self.button = tk.Button(master, text='Load file', command=self.open_file)
+        self.button = tk.Button(master, text='Load image', command=self.open_file)
         self.button.config(width=12, height=1)
         self.button['font'] = font.Font(size=16)
         self.button.pack(side=tk.BOTTOM)
@@ -31,7 +31,10 @@ class Application(tk.Frame):
         self.targets = {0: 'Expressionism', 1: 'Impressionism', 2: 'Realism', 3: 'Renaissance', 4: 'Romanticism'}
 
     def open_file(self):
-        image = askopenfilename()
+        image = askopenfilename(
+        	title='Select an image',
+        	filetypes=[('image files', ('.png', '.jpg', '.jpeg'))]
+        )
 
         self.image_label.destroy()
         self.canvas.get_tk_widget().destroy()
