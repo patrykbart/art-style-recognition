@@ -1,7 +1,6 @@
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
+from tensorflow.keras.applications.mobilenet import MobileNet, preprocess_input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.layers import Flatten, Dense, BatchNormalization, Activation
+from tensorflow.keras.layers import Flatten, Dense
 from tensorflow.keras.models import Model
 
 
@@ -33,58 +32,25 @@ val_generator = train_datagen.flow_from_directory(
     subset='validation'
 )
 
-base_model = ResNet50(
+base_model = MobileNet(
     include_top=False,
     weights='imagenet',
     input_shape=input_shape
 )
 
-for layer in base_model.layers:
-    layer.trainable = True
+output = Flatten()(base_model.output)
+output = Dense(train_generator.num_classes, activation='softmax')(output)
 
-x = base_model.output
-x = Flatten()(x)
-x = Dense(512, kernel_initializer='he_uniform')(x)
-x = BatchNormalization()(x)
-x = Activation('relu')(x)
-x = Dense(16, kernel_initializer='he_uniform')(x)
-x = BatchNormalization()(x)
-x = Activation('relu')(x)
-
-output = Dense(train_generator.num_classes, activation='softmax')(x)
-
-model = Model(inputs=base_model.input, outputs=output)
+model = Model(inputs=base_model.inputs, outputs=output)
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-early_stop = EarlyStopping(monitor='val_loss', patience=20, verbose=1, mode='auto', restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1, mode='auto')
-
-history1 = model.fit_generator(
+model.fit_generator(
     generator=train_generator,
     epochs=10,
     shuffle=True,
     verbose=1,
-    callbacks=[reduce_lr],
     validation_data=val_generator
 )
 
-# retrain core ResNet layers
-for layer in model.layers:
-    layer.trainable = False
-
-for layer in model.layers[:50]:
-    layer.trainable = True
-
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-history2 = model.fit_generator(
-    generator=train_generator,
-    epochs=10,
-    shuffle=True,
-    verbose=1,
-    callbacks=[reduce_lr, early_stop],
-    validation_data=val_generator
-)
-
-model.save('ResNet50_retrained.h5')
+model.save('MobileNet.h5')
 print('Model saved')

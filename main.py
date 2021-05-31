@@ -1,6 +1,5 @@
-import os
 import cv2
-import random
+import numpy as np
 import tkinter as tk
 import tkinter.font as font
 from tkinter.filedialog import askopenfilename
@@ -27,13 +26,13 @@ class Application(tk.Frame):
         self.image_label = tk.Label()
         self.canvas = FigureCanvasTkAgg()
 
-        self.model = load_model('ResNet50_retrained.h5')
+        self.model = load_model('MobileNet.h5')
         self.targets = {0: 'Expressionism', 1: 'Impressionism', 2: 'Realism', 3: 'Renaissance', 4: 'Romanticism'}
 
     def open_file(self):
         image = askopenfilename(
-        	title='Select an image',
-        	filetypes=[('image files', ('.png', '.jpg', '.jpeg'))]
+            title='Select an image',
+            filetypes=[('image files', ('.png', '.jpg', '.jpeg'))]
         )
 
         self.image_label.destroy()
@@ -74,6 +73,7 @@ class Application(tk.Frame):
         self.canvas = FigureCanvasTkAgg(fig, master=root)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.RIGHT)
+
 
 root = tk.Tk()
 app = Application(root)
