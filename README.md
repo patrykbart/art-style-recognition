@@ -59,9 +59,9 @@ If you want to train network by yourself make sure put your dataset like this
 |    |
 |    |
 |    |    ---- /Renaissance
-|    |         agnolo-bronzino_altarpiece.jpg
-|    |         albrecht-altdorfer_mary-in-glory-1526.jpg
-|    |         ...
+|    |    |    agnolo-bronzino_altarpiece.jpg
+|    |    |    albrecht-altdorfer_mary-in-glory-1526.jpg
+|    |    |    ...
 |    |
 |    |    ...
 |
